@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivityFragment">
+    <item
+        android:id="@+id/action_range"
+        android:title="@string/action_Range"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_mapmode"
+        />
+
+</menu>
