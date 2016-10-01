@@ -156,8 +156,9 @@ public class DetailActivityFragment extends Fragment {
         protected void onPostExecute(PlaceObject result) {
             super.onPostExecute(result);
             pg.setVisibility(View.INVISIBLE);
-            if(result==null)
-                Toast.makeText(getActivity(),"Null Data",Toast.LENGTH_SHORT).show();
+            if(result==null) {
+                Toast.makeText(getActivity(), "Null Data", Toast.LENGTH_SHORT).show();
+            }
             try {
                 Log.v("LA", result.getLatitude());
                 Log.v("LO", result.getLongitude());
@@ -175,7 +176,8 @@ public class DetailActivityFragment extends Fragment {
 
     public void populateView(PlaceObject result)
     {
-        String urlStr="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+result.getPhotoReference()+"&key=AIzaSyBPXwJ6XQDhCfQGX1QGJBsoy4z6a1rc0lw";
+        String photoRef=result.getPhotoReference();
+        String urlStr="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+photoRef+"&key=AIzaSyBPXwJ6XQDhCfQGX1QGJBsoy4z6a1rc0lw";
 
         Picasso.with(getActivity()).load(urlStr).placeholder(R.drawable.img_placeholder)
                 .into(iv_head);
@@ -184,8 +186,6 @@ public class DetailActivityFragment extends Fragment {
         phone.setText(result.getPhno());
         Picasso.with(getActivity()).load(result.getIcon()).placeholder(R.drawable.img_placeholder)
                 .into(iv_icon);
-        address.setText(result.getAddr());
-        address.setText(result.getAddr());
         vicinity.setText(result.getVicinity());
     }
 
