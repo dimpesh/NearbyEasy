@@ -1,6 +1,5 @@
 package dimpesh.com.nearbyeasy;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -42,12 +41,15 @@ public class DetailActivityFragment extends Fragment {
     TextView phone;
     TextView vicinity;
     String title="Description";
+    public static MyObject mRecieved;
+
     public DetailActivityFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.v(TAG,"onCreateView Called");
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
         pg = (ProgressBar) view.findViewById(R.id.detail_progress);
         iv_head=(ImageView)view.findViewById(R.id.detail_img_head);
@@ -56,8 +58,15 @@ public class DetailActivityFragment extends Fragment {
         address=(TextView)view.findViewById(R.id.detail_address);
         phone=(TextView)view.findViewById(R.id.detail_phone);
         vicinity= (TextView) view.findViewById(R.id.detail_vicinity);
+        Log.v(TAG,"Parcelable : "+mRecieved.getName());
+        Log.v(TAG,"Parcelable : "+mRecieved.getId());
+
+/*
         String str = getActivity().getIntent().getExtras().getString(Intent.EXTRA_TEXT);
         String name = getActivity().getIntent().getExtras().getString("name");
+*/
+        String str=mRecieved.getId();
+        String name=mRecieved.getName();
         title=name;
 
         new SearchDetailTask().execute("https://maps.googleapis.com/maps/api/place/details/json?placeid=" + str + "&key=AIzaSyBPXwJ6XQDhCfQGX1QGJBsoy4z6a1rc0lw");
@@ -191,6 +200,21 @@ public class DetailActivityFragment extends Fragment {
 
 
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.v(TAG,"onCreate Called");
+        if (getArguments()!=null) {
+            // Load the dummy content specified by the fragment
+            // arguments. In a real-world scenario, use a Loader
+            // to load content from a content provider.
+            mRecieved =getArguments().getParcelable("place");
+        }
+        else
+        {
+            mRecieved=getActivity().getIntent().getParcelableExtra("place");
+        }
+    }
 
 
 }
