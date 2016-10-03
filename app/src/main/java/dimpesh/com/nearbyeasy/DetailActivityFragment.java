@@ -1,5 +1,6 @@
 package dimpesh.com.nearbyeasy;
 
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -42,6 +43,9 @@ public class DetailActivityFragment extends Fragment {
     TextView vicinity;
     String title="Description";
     public static MyObject mRecieved;
+    TextView titleVicinity,titleAddress;
+    public Typeface Courgette;
+    public Typeface BalooBhaina;
 
     public DetailActivityFragment() {
     }
@@ -58,6 +62,11 @@ public class DetailActivityFragment extends Fragment {
         address=(TextView)view.findViewById(R.id.detail_address);
         phone=(TextView)view.findViewById(R.id.detail_phone);
         vicinity= (TextView) view.findViewById(R.id.detail_vicinity);
+
+        // Fontface declaration...
+        Courgette = Typeface.createFromAsset(getActivity().getApplicationContext().getAssets(), "Courgette-Regular.ttf");
+        BalooBhaina = Typeface.createFromAsset(getActivity().getApplicationContext().getAssets(), "BalooBhaina-Regular.ttf");
+
         Log.v(TAG,"Parcelable : "+mRecieved.getName());
         Log.v(TAG,"Parcelable : "+mRecieved.getId());
 
@@ -71,6 +80,13 @@ public class DetailActivityFragment extends Fragment {
 
         new SearchDetailTask().execute("https://maps.googleapis.com/maps/api/place/details/json?placeid=" + str + "&key=AIzaSyBPXwJ6XQDhCfQGX1QGJBsoy4z6a1rc0lw");
         getActivity().setTitle(title);
+
+        // Reference for Font Style Change...
+        titleVicinity = (TextView) view.findViewById(R.id.detail_vicinity_title);
+        titleAddress = (TextView) view.findViewById(R.id.detail_address_title);
+        titleVicinity.setTypeface(BalooBhaina);
+        titleAddress.setTypeface(BalooBhaina);
+
         return view;
     }
 
@@ -139,6 +155,8 @@ public class DetailActivityFragment extends Fragment {
                 Log.v("Photo Referemce GET : ", "Reference" + mObj.getPhotoReference());
                 JSONObject obj4=obj2.getJSONObject("geometry");
                 JSONObject obj5=obj4.getJSONObject("location");
+                JSONObject open_hrs=obj2.getJSONObject("opening_hours");
+                mObj.setOpen(open_hrs.getBoolean("open_now"));
                 String la=obj5.getString("lat");
                 String lo=obj5.getString("lng");
                 mObj.setLatitude(la);
@@ -175,7 +193,9 @@ public class DetailActivityFragment extends Fragment {
                 Log.v(TAG, "result" + result.getPhotoReference());
             }catch(Exception e)
             {
+/*
                 Toast.makeText(getActivity(),"Complete Data Not Available",Toast.LENGTH_SHORT).show();
+*/
             }
             populateView(result);
 
@@ -191,11 +211,27 @@ public class DetailActivityFragment extends Fragment {
         Picasso.with(getActivity()).load(urlStr).placeholder(R.drawable.img_placeholder)
                 .into(iv_head);
 
+        Log.v(TAG,result.getOpen()+"");
         address.setText(result.getAddr());
+        address.setTypeface(Courgette);
+        vicinity.setTypeface(Courgette);
         phone.setText(result.getPhno());
+        phone.setTypeface(BalooBhaina);
         Picasso.with(getActivity()).load(result.getIcon()).placeholder(R.drawable.img_placeholder)
                 .into(iv_icon);
         vicinity.setText(result.getVicinity());
+        if(result.getOpen())
+        {
+            rating.setText("OPEN");
+            rating.setTypeface(Courgette);
+        }
+        else
+        {
+            rating.setText("CLOSED");
+            rating.setTypeface(Courgette);
+        }
+
+
     }
 
 

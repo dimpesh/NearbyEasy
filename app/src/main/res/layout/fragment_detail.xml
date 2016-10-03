@@ -8,8 +8,11 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="dimpesh.com.nearbyeasy.DetailActivityFragment"
+    tools:context="dimpesh.com.nearbyeasy.DetailActivityFragment">
+
+<!--
     tools:showIn="@layout/activity_detail">
+-->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -19,7 +22,8 @@
     android:layout_height="wrap_content">
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="300dp"
+        android:scaleType="fitXY"
         android:id="@+id/detail_img_head"
         android:src="@drawable/img_placeholder"/>
     <ProgressBar
@@ -49,12 +53,12 @@
             android:id="@+id/detail_rating"
             android:layout_marginLeft="60dp"
             android:textSize="32sp"
+            android:textColor="@color/colorPrimaryDark"
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="7.8"
-            android:gravity="center"
-            android:drawableRight="@android:drawable/star_big_on"/>
+            android:gravity="center"/>
+<!--            android:drawableRight="@android:drawable/star_big_on"/>-->
     </LinearLayout>
     <TextView
         android:id="@+id/detail_phone"
@@ -62,8 +66,9 @@
         android:layout_below="@+id/detail_icon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:text="@string/phone_no"
+        android:textSize="40sp"
+        android:autoLink="phone"
+        android:text=""
         android:gravity="center"
         android:drawableEnd="@android:drawable/stat_sys_phone_call"
         android:textColor="@color/colorPrimaryDark"
@@ -84,7 +89,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/address_size"
-        android:text="@string/sample_address"
+        android:text=""
         android:layout_below="@+id/detail_address_title"
         />
     <TextView
@@ -102,7 +107,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/address_size"
-        android:text="@string/sample_address"
+        android:text=""
         android:layout_below="@+id/detail_vicinity_title"
         />
 
