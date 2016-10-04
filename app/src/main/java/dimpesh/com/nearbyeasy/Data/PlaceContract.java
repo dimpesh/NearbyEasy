@@ -37,6 +37,7 @@ public class PlaceContract {
         // Content URI
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(TABLE_PLACE).build();
 
+
         // Content Dir Type defined
         public static final String CONTENT_DIR_TYPE = "vnd.android.cursor.dir/" + CONTENT_AUTHORITY + "/" + PATH_PLACE;
 

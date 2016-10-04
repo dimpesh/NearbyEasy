@@ -23,6 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+<!--
         <activity
             android:name=".ui.DetailsActivity"
             android:label="@string/title_activity_details"
@@ -32,6 +33,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="dimpesh.com.nearbyeasy.MainActivity" />
         </activity>
+-->
         <activity
             android:name=".DetailActivity"
             android:label="@string/title_activity_detail"
@@ -52,6 +54,11 @@
         <service
             android:name=".widget.WidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <!--- Content Provider Registration Goes Here-->
+        <provider
+            android:authorities="dimpesh.com.nearbyeasy.app"
+            android:name=".Data.PlaceProvider"/>
 
     </application>
 

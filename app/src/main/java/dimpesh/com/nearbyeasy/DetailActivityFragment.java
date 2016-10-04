@@ -97,13 +97,23 @@ public class DetailActivityFragment extends Fragment {
         titleVicinity.setTypeface(BalooBhaina);
         titleAddress.setTypeface(BalooBhaina);
 
+        String tryUri=PlaceContract.PlaceEntry.CONTENT_URI+"";
+        Log.v(TAG,"URI : "+tryUri);
         // Icon For Fab
         String url = "content://dimpesh.com.nearbyeasy.app/place";
 
         Uri fetchUri = Uri.parse(url);
-        Cursor findQuery = getContext().getContentResolver().query(fetchUri, null, "_placeid=" + mRecieved.getId(), null, null);
-        if (findQuery.moveToFirst()) {
-            isFavourite = true;
+        Cursor findQuery = getContext().getContentResolver().query(fetchUri, null, "_placeid='" + mRecieved.getId()+"'", null, null);
+        try {
+            if (findQuery.moveToFirst()) {
+                isFavourite = true;
+            } else {
+                isFavourite=false;
+            }
+        }
+        catch (Exception e)
+        {
+            Log.v(TAG,"Cursor Exception while fetching fab icon");
         }
         if (isFavourite == true) {
             fab.setImageResource(R.drawable.like);
@@ -119,6 +129,7 @@ public class DetailActivityFragment extends Fragment {
 
             @Override
             public void onClick(View v) {
+                Log.v(TAG,"onClick Called");
                 String url = "content://dimpesh.com.nearbyeasy.app/place";
 
                 Uri fetchUri = Uri.parse(url);
@@ -142,13 +153,13 @@ public class DetailActivityFragment extends Fragment {
                     values.put(PlaceContract.PlaceEntry.COLUMN_VICINITY, vicinity.getText().toString());
 
                     // Intert into Database...
-                    Uri uri = getContext().getContentResolver().insert(PlaceContract.PlaceEntry.CONTENT_URI, values);
+                    Uri uri = getActivity().getApplicationContext().getContentResolver().insert(PlaceContract.PlaceEntry.CONTENT_URI, values);
 
-                    Toast.makeText(getActivity(), "Added TO Favourites Successfully...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Added TO Favourite Successfully...", Toast.LENGTH_SHORT).show();
                     fab.setImageResource(R.drawable.like);
                     isFavourite = true;
                     String result = "";
-                    Cursor c = getContext().getContentResolver().query(fetchUri, null, null, null, null);
+                    Cursor c = getActivity().getApplicationContext().getContentResolver().query(fetchUri, null, null, null, null);
                     if (c.moveToFirst()) {
                         do {
                             {
@@ -170,8 +181,8 @@ public class DetailActivityFragment extends Fragment {
                 }
                 else
                 {
-                    Toast.makeText(getActivity(),"Movie Successfully Removed...",Toast.LENGTH_SHORT).show();
-                    int delID=getContext().getContentResolver().delete(fetchUri,"_placeid="+mRecieved.getId(),null);
+                    Toast.makeText(getActivity(),"Removed From Favorite Successfully ...",Toast.LENGTH_SHORT).show();
+                    int delID=getActivity().getApplicationContext().getContentResolver().delete(fetchUri,"_placeid='"+mRecieved.getId()+"'",null);
                     fab.setImageResource(R.drawable.dislike);
                     isFavourite=false;
 
