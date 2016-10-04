@@ -84,14 +84,13 @@ public class WidgetProvider extends AppWidgetProvider
     @SuppressLint("NewApi")
     private RemoteViews initViews(Context context,AppWidgetManager widgetManager,int widgetId)
     {
-//        RemoteViews mView=new RemoteViews(context.getPackageName(),R.layout.widget_detail);
+        RemoteViews mView=new RemoteViews(context.getPackageName(),R.layout.widget_detail);
         Intent intent=new Intent(context,WidgetService.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
         intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
-//        mView.setRemoteAdapter(widgetId,R.id.widgetCollectionList,intent);
+        mView.setRemoteAdapter(widgetId,R.id.widgetCollectionList,intent);
 
-//        return mView;
-        return null;
+        return mView;
     }
 
 

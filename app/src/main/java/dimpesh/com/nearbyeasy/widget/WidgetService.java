@@ -49,6 +49,7 @@ public class WidgetService extends RemoteViewsService {
                     final long identityToken = Binder.clearCallingIdentity();
 
                     try {
+
 /*
                         data = WidgetService.this.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
                                 new String[]{QuoteColumns.SYMBOL,QuoteColumns.BIDPRICE,
@@ -57,8 +58,9 @@ public class WidgetService extends RemoteViewsService {
                                 new String[]{"1"}, null);
 
                         data.moveToFirst();
-                        Binder.restoreCallingIdentity(identityToken);
 */
+                        Binder.restoreCallingIdentity(identityToken);
+
                     } catch (Exception e) {
                         Log.v("Widget Gen. Exception :", e.getMessage());
                     }
@@ -88,9 +90,9 @@ public class WidgetService extends RemoteViewsService {
 
             @Override
             public RemoteViews getLoadingView() {
-//                return new RemoteViews(getPackageName(), R.layout.widget_detail_list_item);
+                return new RemoteViews(getPackageName(), android.R.layout.simple_list_item_1);
                 // comment this line..after uncommenting above
-                return null;
+                //return null;
             }
 
             @Override
@@ -103,9 +105,9 @@ public class WidgetService extends RemoteViewsService {
 /*
                 if (data.moveToPosition(position))
                     return data.getLong(INDEX_STOCK_ID);
-                return position;
 */
-                return 0;
+                return (long)position;
+//                return position;
             }
 
             @Override
