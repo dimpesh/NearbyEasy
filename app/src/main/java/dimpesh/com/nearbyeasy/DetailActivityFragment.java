@@ -78,7 +78,7 @@ public class DetailActivityFragment extends Fragment {
         String name=mRecieved.getName();
         title=name;
 
-        new SearchDetailTask().execute("https://maps.googleapis.com/maps/api/place/details/json?placeid=" + str + "&key=AIzaSyBPXwJ6XQDhCfQGX1QGJBsoy4z6a1rc0lw");
+        new SearchDetailTask().execute("https://maps.googleapis.com/maps/api/place/details/json?placeid=" + str + "&key="+BuildConfig.MyGoogleMapKey);
         getActivity().setTitle(title);
 
         // Reference for Font Style Change...
