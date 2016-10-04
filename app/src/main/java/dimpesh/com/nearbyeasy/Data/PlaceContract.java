@@ -44,7 +44,7 @@ public class PlaceContract {
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + CONTENT_AUTHORITY + "/" + PATH_PLACE;
 
 
-        public static Uri buildMoviesUri(long id) {
+        public static Uri buildPlaceUri(long id) {
 
 //            return CONTENT_URI.buildUpon().appendPath(id).build();
             return ContentUris.withAppendedId(CONTENT_URI, id);
