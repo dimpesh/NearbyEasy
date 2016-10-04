@@ -1,8 +1,12 @@
 package dimpesh.com.nearbyeasy;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,12 +32,15 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 
+import dimpesh.com.nearbyeasy.Data.PlaceContract;
+
 /**
  * A placeholder fragment containing a simple view.
  */
 public class DetailActivityFragment extends Fragment {
 
     public static final String TAG = "DetailsActivityFragment";
+    boolean isFavourite = false;
     ImageView iv_head;
     ProgressBar pg;
     ImageView iv_icon;
@@ -41,9 +48,11 @@ public class DetailActivityFragment extends Fragment {
     TextView address;
     TextView phone;
     TextView vicinity;
-    String title="Description";
+    FloatingActionButton fab;
+    String title = "Description";
     public static MyObject mRecieved;
-    TextView titleVicinity,titleAddress;
+    public PlaceObject placeObject = new PlaceObject();
+    TextView titleVicinity, titleAddress;
     public Typeface Courgette;
     public Typeface BalooBhaina;
 
@@ -53,32 +62,33 @@ public class DetailActivityFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.v(TAG,"onCreateView Called");
-        View view = inflater.inflate(R.layout.fragment_detail, container, false);
+        Log.v(TAG, "onCreateView Called");
+        final View view = inflater.inflate(R.layout.fragment_detail, container, false);
         pg = (ProgressBar) view.findViewById(R.id.detail_progress);
-        iv_head=(ImageView)view.findViewById(R.id.detail_img_head);
-        iv_icon= (ImageView) view.findViewById(R.id.detail_img_icon);
-        rating=(TextView)view.findViewById(R.id.detail_rating);
-        address=(TextView)view.findViewById(R.id.detail_address);
-        phone=(TextView)view.findViewById(R.id.detail_phone);
-        vicinity= (TextView) view.findViewById(R.id.detail_vicinity);
+        iv_head = (ImageView) view.findViewById(R.id.detail_img_head);
+        iv_icon = (ImageView) view.findViewById(R.id.detail_img_icon);
+        rating = (TextView) view.findViewById(R.id.detail_rating);
+        address = (TextView) view.findViewById(R.id.detail_address);
+        phone = (TextView) view.findViewById(R.id.detail_phone);
+        vicinity = (TextView) view.findViewById(R.id.detail_vicinity);
+        fab = (FloatingActionButton) view.findViewById(R.id.detail_fab);
 
         // Fontface declaration...
         Courgette = Typeface.createFromAsset(getActivity().getApplicationContext().getAssets(), "Courgette-Regular.ttf");
         BalooBhaina = Typeface.createFromAsset(getActivity().getApplicationContext().getAssets(), "BalooBhaina-Regular.ttf");
 
-        Log.v(TAG,"Parcelable : "+mRecieved.getName());
-        Log.v(TAG,"Parcelable : "+mRecieved.getId());
+        Log.v(TAG, "Parcelable : " + mRecieved.getName());
+        Log.v(TAG, "Parcelable : " + mRecieved.getId());
 
 /*
         String str = getActivity().getIntent().getExtras().getString(Intent.EXTRA_TEXT);
         String name = getActivity().getIntent().getExtras().getString("name");
 */
-        String str=mRecieved.getId();
-        String name=mRecieved.getName();
-        title=name;
+        String str = mRecieved.getId();
+        String name = mRecieved.getName();
+        title = name;
 
-        new SearchDetailTask().execute("https://maps.googleapis.com/maps/api/place/details/json?placeid=" + str + "&key="+BuildConfig.MyGoogleMapKey);
+        new SearchDetailTask().execute("https://maps.googleapis.com/maps/api/place/details/json?placeid=" + str + "&key=" + BuildConfig.MyGoogleMapKey);
         getActivity().setTitle(title);
 
         // Reference for Font Style Change...
@@ -86,6 +96,89 @@ public class DetailActivityFragment extends Fragment {
         titleAddress = (TextView) view.findViewById(R.id.detail_address_title);
         titleVicinity.setTypeface(BalooBhaina);
         titleAddress.setTypeface(BalooBhaina);
+
+        // Icon For Fab
+        String url = "content://dimpesh.com.nearbyeasy.app/place";
+
+        Uri fetchUri = Uri.parse(url);
+        Cursor findQuery = getContext().getContentResolver().query(fetchUri, null, "_placeid=" + mRecieved.getId(), null, null);
+        if (findQuery.moveToFirst()) {
+            isFavourite = true;
+        }
+        if (isFavourite == true) {
+            fab.setImageResource(R.drawable.like);
+
+        } else {
+            fab.setImageResource(R.drawable.dislike);
+
+        }
+
+        // fab click listener.
+
+        fab.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                String url = "content://dimpesh.com.nearbyeasy.app/place";
+
+                Uri fetchUri = Uri.parse(url);
+
+                // Add to Database...
+                if (isFavourite == false) {
+                    ContentValues values = new ContentValues();
+                    values.put(PlaceContract.PlaceEntry.COLUMN_PLACEID, mRecieved.getId());
+                    values.put(PlaceContract.PlaceEntry.COLUMN_NAME, mRecieved.getName());
+                    values.put(PlaceContract.PlaceEntry.COLUMN_PHOTOREF, placeObject.getPhotoReference());
+                    values.put(PlaceContract.PlaceEntry.COLUMN_ICON, placeObject.getIcon());
+                    String checkOpen;
+                    if (placeObject.getOpen())
+                        checkOpen = "true";
+                    else
+                        checkOpen = "false";
+
+                    values.put(PlaceContract.PlaceEntry.COLUMN_OPEN, checkOpen);
+                    values.put(PlaceContract.PlaceEntry.COLUMN_PHONE, phone.getText().toString());
+                    values.put(PlaceContract.PlaceEntry.COLUMN_ADDRESS, address.getText().toString());
+                    values.put(PlaceContract.PlaceEntry.COLUMN_VICINITY, vicinity.getText().toString());
+
+                    // Intert into Database...
+                    Uri uri = getContext().getContentResolver().insert(PlaceContract.PlaceEntry.CONTENT_URI, values);
+
+                    Toast.makeText(getActivity(), "Added TO Favourites Successfully...", Toast.LENGTH_SHORT).show();
+                    fab.setImageResource(R.drawable.like);
+                    isFavourite = true;
+                    String result = "";
+                    Cursor c = getContext().getContentResolver().query(fetchUri, null, null, null, null);
+                    if (c.moveToFirst()) {
+                        do {
+                            {
+                                result = "S. NUMBER           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry._ID))
+                                        + "\nPLACE_ID             : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PLACEID))
+                                        + "\nPLACE NAME          : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_NAME))
+                                        + "\nPLACEE PHOTO REF       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHOTOREF))
+                                        + "\nPLACE ICON   : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ICON))
+                                        + "\nPLACE OPEN           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_OPEN))
+                                        + "\nPLACE PHONE         : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHONE))
+                                        + "\nMOVIE ADDRESS         : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ADDRESS))
+                                        + "\nMOVIE VICINITY       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_VICINITY)).toString();
+
+                                Log.v("RESULT_QUERY VERBOSE", result);
+                            }
+                        } while (c.moveToNext());
+                    }
+
+                }
+                else
+                {
+                    Toast.makeText(getActivity(),"Movie Successfully Removed...",Toast.LENGTH_SHORT).show();
+                    int delID=getContext().getContentResolver().delete(fetchUri,"_placeid="+mRecieved.getId(),null);
+                    fab.setImageResource(R.drawable.dislike);
+                    isFavourite=false;
+
+                }
+
+            }
+        });
 
         return view;
     }
@@ -149,16 +242,16 @@ public class DetailActivityFragment extends Fragment {
 
                 JSONArray arr = obj2.getJSONArray("photos");
                 JSONObject obj3 = arr.getJSONObject(0);
-                String str=obj3.getString("photo_reference");
-                Log.v("String",str);
+                String str = obj3.getString("photo_reference");
+                Log.v("String", str);
                 mObj.setPhotoReference(obj3.getString("photo_reference"));
                 Log.v("Photo Referemce GET : ", "Reference" + mObj.getPhotoReference());
-                JSONObject obj4=obj2.getJSONObject("geometry");
-                JSONObject obj5=obj4.getJSONObject("location");
-                JSONObject open_hrs=obj2.getJSONObject("opening_hours");
+                JSONObject obj4 = obj2.getJSONObject("geometry");
+                JSONObject obj5 = obj4.getJSONObject("location");
+                JSONObject open_hrs = obj2.getJSONObject("opening_hours");
                 mObj.setOpen(open_hrs.getBoolean("open_now"));
-                String la=obj5.getString("lat");
-                String lo=obj5.getString("lng");
+                String la = obj5.getString("lat");
+                String lo = obj5.getString("lng");
                 mObj.setLatitude(la);
                 mObj.setLongitude(lo);
 
@@ -174,7 +267,7 @@ public class DetailActivityFragment extends Fragment {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(mObj!=null)
+            if (mObj != null)
                 return mObj;
             return null;
         }
@@ -183,7 +276,7 @@ public class DetailActivityFragment extends Fragment {
         protected void onPostExecute(PlaceObject result) {
             super.onPostExecute(result);
             pg.setVisibility(View.INVISIBLE);
-            if(result==null) {
+            if (result == null) {
                 Toast.makeText(getActivity(), "Null Data", Toast.LENGTH_SHORT).show();
             }
             try {
@@ -191,8 +284,7 @@ public class DetailActivityFragment extends Fragment {
                 Log.v("LO", result.getLongitude());
 
                 Log.v(TAG, "result" + result.getPhotoReference());
-            }catch(Exception e)
-            {
+            } catch (Exception e) {
 /*
                 Toast.makeText(getActivity(),"Complete Data Not Available",Toast.LENGTH_SHORT).show();
 */
@@ -203,15 +295,15 @@ public class DetailActivityFragment extends Fragment {
         }
     }
 
-    public void populateView(PlaceObject result)
-    {
-        String photoRef=result.getPhotoReference();
-        String urlStr="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+photoRef+"&key=AIzaSyBPXwJ6XQDhCfQGX1QGJBsoy4z6a1rc0lw";
+    public void populateView(PlaceObject result) {
+        placeObject = result;
+        String photoRef = result.getPhotoReference();
+        String urlStr = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + photoRef + "&key=AIzaSyBPXwJ6XQDhCfQGX1QGJBsoy4z6a1rc0lw";
 
         Picasso.with(getActivity()).load(urlStr).placeholder(R.drawable.img_placeholder)
                 .into(iv_head);
 
-        Log.v(TAG,result.getOpen()+"");
+        Log.v(TAG, result.getOpen() + "");
         address.setText(result.getAddr());
         address.setTypeface(Courgette);
         vicinity.setTypeface(Courgette);
@@ -220,13 +312,10 @@ public class DetailActivityFragment extends Fragment {
         Picasso.with(getActivity()).load(result.getIcon()).placeholder(R.drawable.img_placeholder)
                 .into(iv_icon);
         vicinity.setText(result.getVicinity());
-        if(result.getOpen())
-        {
+        if (result.getOpen()) {
             rating.setText("OPEN");
             rating.setTypeface(Courgette);
-        }
-        else
-        {
+        } else {
             rating.setText("CLOSED");
             rating.setTypeface(Courgette);
         }
@@ -235,20 +324,17 @@ public class DetailActivityFragment extends Fragment {
     }
 
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.v(TAG,"onCreate Called");
-        if (getArguments()!=null) {
+        Log.v(TAG, "onCreate Called");
+        if (getArguments() != null) {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            mRecieved =getArguments().getParcelable("place");
-        }
-        else
-        {
-            mRecieved=getActivity().getIntent().getParcelableExtra("place");
+            mRecieved = getArguments().getParcelable("place");
+        } else {
+            mRecieved = getActivity().getIntent().getParcelableExtra("place");
         }
     }
 
