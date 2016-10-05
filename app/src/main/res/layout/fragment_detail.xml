@@ -61,10 +61,20 @@
             android:gravity="center"/>
 <!--            android:drawableRight="@android:drawable/star_big_on"/>-->
     </LinearLayout>
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/detail_admob"
+        android:layout_marginTop="@dimen/margin_top_phone"
+        android:layout_below="@+id/detail_icon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:adSize="BANNER"
+        app:adUnitId="@string/banner_ad_unit_id"/>
+
+
     <TextView
         android:id="@+id/detail_phone"
         android:layout_marginTop="@dimen/margin_top_phone"
-        android:layout_below="@+id/detail_icon"
+        android:layout_below="@+id/detail_admob"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="40sp"

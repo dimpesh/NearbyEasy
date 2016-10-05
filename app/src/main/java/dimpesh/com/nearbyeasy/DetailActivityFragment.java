@@ -17,6 +17,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -55,6 +57,7 @@ public class DetailActivityFragment extends Fragment {
     TextView titleVicinity, titleAddress;
     public Typeface Courgette;
     public Typeface BalooBhaina;
+    AdView mAdView;
 
     public DetailActivityFragment() {
     }
@@ -155,7 +158,7 @@ public class DetailActivityFragment extends Fragment {
                     // Intert into Database...
                     Uri uri = getActivity().getApplicationContext().getContentResolver().insert(PlaceContract.PlaceEntry.CONTENT_URI, values);
 
-                    Toast.makeText(getActivity(), "Added TO Favourite Successfully...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getString(R.string.add_success), Toast.LENGTH_SHORT).show();
                     fab.setImageResource(R.drawable.like);
                     isFavourite = true;
                     String result = "";
@@ -181,7 +184,7 @@ public class DetailActivityFragment extends Fragment {
                 }
                 else
                 {
-                    Toast.makeText(getActivity(),"Removed From Favorite Successfully ...",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(),getString(R.string.remove_success),Toast.LENGTH_SHORT).show();
                     int delID=getActivity().getApplicationContext().getContentResolver().delete(fetchUri,"_placeid='"+mRecieved.getId()+"'",null);
                     fab.setImageResource(R.drawable.dislike);
                     isFavourite=false;
@@ -190,6 +193,14 @@ public class DetailActivityFragment extends Fragment {
 
             }
         });
+
+        // Code for loading Banner Ads
+        mAdView = (AdView) view.findViewById(R.id.detail_admob);
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .build();
+        mAdView.loadAd(adRequest);
+
 
         return view;
     }
@@ -288,7 +299,7 @@ public class DetailActivityFragment extends Fragment {
             super.onPostExecute(result);
             pg.setVisibility(View.INVISIBLE);
             if (result == null) {
-                Toast.makeText(getActivity(), "Null Data", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), getString(R.string.null_data), Toast.LENGTH_SHORT).show();
             }
             try {
                 Log.v("LA", result.getLatitude());

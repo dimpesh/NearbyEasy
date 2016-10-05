@@ -10,4 +10,10 @@
     <string name="action_Range">Range</string>
     <string name="action_category">Category</string>
     <string name="favorite_places">Favorite Places</string>
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="no_data">No Data Available... Try Again...</string>
+    <string name="toast_error">Error.. Try Later</string>
+    <string name="add_success">Added To Favorite Successfully...</string>
+    <string name="remove_success">Removed From Favorite Successfully ...</string>
+    <string name="null_data">Null Data</string>
 </resources>

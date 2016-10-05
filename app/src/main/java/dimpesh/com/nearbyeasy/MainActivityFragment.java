@@ -1047,7 +1047,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 //                lst.setAdapter(new MyAdapter(getApplicationContext(),result));
                     lv.setAdapter(new MyListAdapter(getActivity(), nameArr, iconArr, vicArr));
                 } else {
-                    Toast.makeText(getActivity(), "Error.. Try Later", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getString(R.string.toast_error), Toast.LENGTH_SHORT).show();
                 }
 
             }
