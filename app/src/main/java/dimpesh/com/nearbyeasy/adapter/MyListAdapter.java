@@ -77,6 +77,7 @@ public class MyListAdapter extends BaseAdapter {
 		});
 
 */
+        itemView.setContentDescription(name.get(position));
         return itemView;
     }
 

@@ -133,6 +133,7 @@
         android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/fab_margin"
         app:srcCompat="@drawable/dislike"
+        android:contentDescription="@string/add_to_fav"
         android:layout_below="@+id/detail_vicinity"
         android:layout_alignParentRight="true"
 

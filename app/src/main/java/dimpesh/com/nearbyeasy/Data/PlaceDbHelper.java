@@ -32,13 +32,13 @@ public class PlaceDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_PLACE_TABLE = "CREATE TABLE " + PlaceContract.PlaceEntry.TABLE_PLACE + "("
                 + PlaceContract.PlaceEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + PlaceContract.PlaceEntry.COLUMN_PLACEID + " TEXT NOT NULL,"
-                + PlaceContract.PlaceEntry.COLUMN_NAME + " TEXT NOT NULL,"
-                + PlaceContract.PlaceEntry.COLUMN_PHOTOREF + " TEXT NOT NULL,"
-                + PlaceContract.PlaceEntry.COLUMN_ICON + " TEXT NOT NULL,"
-                + PlaceContract.PlaceEntry.COLUMN_OPEN + " TEXT NOT NULL,"
-                + PlaceContract.PlaceEntry.COLUMN_PHONE + " TEXT NOT NULL,"
-                + PlaceContract.PlaceEntry.COLUMN_ADDRESS + " TEXT NOT NULL,"
-                + PlaceContract.PlaceEntry.COLUMN_VICINITY + " TEXT NOT NULL );";
+                + PlaceContract.PlaceEntry.COLUMN_NAME + " TEXT,"
+                + PlaceContract.PlaceEntry.COLUMN_PHOTOREF + " TEXT,"
+                + PlaceContract.PlaceEntry.COLUMN_ICON + " TEXT,"
+                + PlaceContract.PlaceEntry.COLUMN_OPEN + " TEXT,"
+                + PlaceContract.PlaceEntry.COLUMN_PHONE + " TEXT,"
+                + PlaceContract.PlaceEntry.COLUMN_ADDRESS + " TEXT,"
+                + PlaceContract.PlaceEntry.COLUMN_VICINITY + " TEXT );";
 
         // Executing Query
         db.execSQL(SQL_CREATE_PLACE_TABLE);

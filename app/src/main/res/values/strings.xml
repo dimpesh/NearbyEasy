@@ -17,4 +17,5 @@
     <string name="remove_success">Removed From Favorite Successfully ...</string>
     <string name="null_data">Null Data</string>
     <string name="favorite">Favorite</string>
+    <string name="add_to_fav">Favorite Button</string>
 </resources>
