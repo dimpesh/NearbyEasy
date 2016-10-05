@@ -1194,11 +1194,13 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         dialogBuilder.setView(dialog);
 
         final EditText et = (EditText) dialog.findViewById(R.id.range);
+        et.setText(pref.getString("range","2000"));
         dialogBuilder.setTitle("Range For Searching");
         dialogBuilder.setMessage("Enter range in Meters");
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String range = et.getText().toString();
+
                 editorPref = pref.edit();
                 editorPref.putString("range", range);
                 editorPref.commit();

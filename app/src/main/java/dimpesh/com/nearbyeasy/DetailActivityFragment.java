@@ -319,8 +319,9 @@ public class DetailActivityFragment extends Fragment {
 
     public void populateView(PlaceObject result) {
         placeObject = result;
+        if(result!=null){
         String photoRef = result.getPhotoReference();
-        String urlStr = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + photoRef + "&key=AIzaSyBPXwJ6XQDhCfQGX1QGJBsoy4z6a1rc0lw";
+        String urlStr = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + photoRef + "&key="+BuildConfig.MyGoogleMapKey;
 
         Picasso.with(getActivity()).load(urlStr).placeholder(R.drawable.img_placeholder)
                 .into(iv_head);
@@ -340,8 +341,40 @@ public class DetailActivityFragment extends Fragment {
         } else {
             rating.setText("CLOSED");
             rating.setTypeface(Courgette);
-        }
 
+        }
+    }
+        else
+        {
+            String url = "content://dimpesh.com.nearbyeasy.app/place";
+            Uri fetchUri = Uri.parse(url);
+            try {
+                Cursor findQuery = getContext().getContentResolver().query(fetchUri, null, "_placeid='" + mRecieved.getId() + "'", null, null);
+                if(findQuery!=null)
+                {
+                    findQuery.moveToFirst();
+                    address.setText(findQuery.getString(findQuery.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ADDRESS)));
+                    vicinity.setText(findQuery.getString(findQuery.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_VICINITY)));
+                    rating.setText(findQuery.getString(findQuery.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_OPEN)));
+                    String urlStr = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + findQuery.getString(findQuery.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHOTOREF)) + "&key="+BuildConfig.MyGoogleMapKey;
+                    Picasso.with(getActivity()).load(urlStr)
+                            .placeholder(R.drawable.img_placeholder)
+                            .error(R.drawable.img_placeholder)
+                            .into(iv_head);
+
+                    Picasso.with(getActivity()).load(findQuery.getString(findQuery.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ICON)))
+                            .error(R.drawable.img_placeholder)
+                            .placeholder(R.drawable.img_placeholder)
+                            .into(iv_icon);
+
+                }
+            }
+            catch(Exception e)
+            {
+                Log.v(TAG,"Offline Data is not Available...");
+            }
+
+        }
 
     }
 
