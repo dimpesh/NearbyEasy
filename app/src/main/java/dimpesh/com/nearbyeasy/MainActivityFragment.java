@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -17,6 +18,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
@@ -55,8 +57,11 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
+import dimpesh.com.nearbyeasy.Data.PlaceContract;
 import dimpesh.com.nearbyeasy.adapter.MyListAdapter;
+import dimpesh.com.nearbyeasy.adapter.PlaceCursorAdapter;
 
 import static android.content.Context.MODE_WORLD_WRITEABLE;
 
@@ -64,7 +69,7 @@ import static android.content.Context.MODE_WORLD_WRITEABLE;
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,LocationListener,LoaderManager.LoaderCallbacks<Cursor>{
+        GoogleApiClient.OnConnectionFailedListener, LocationListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     //  Shared Preferences Object Data...
     SharedPreferences pref;
@@ -78,6 +83,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     MyObject[] mobj = new MyObject[]{};
     String rangeStr;
     String categoryStr;
+    MyListAdapter mAdapter;
 
     // for location...
     double lng;
@@ -92,7 +98,39 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 
 
     /// Tablet UI Mode Design
-    private static final String STATE_ACTIVATED_POSITION="activated_position";
+    private static final String STATE_ACTIVATED_POSITION = "activated_position";
+
+
+    // For Content Provider and Loader
+    // Declaring MyCursorAdapter variable and using it in programmin..
+    public PlaceCursorAdapter placeCursorAdapter;
+
+    //    public MovieCursorAdapter movieCursorAdapter;
+    // CursorLoader Implementation Step 1, create Loader ID
+    private static final int PLACE_LOADER = 0;
+    // Adding String [] columns.
+    private static final String[] PLACE_COLUMNS =
+            {
+                    PlaceContract.PlaceEntry.COLUMN_ID,
+                    PlaceContract.PlaceEntry.COLUMN_PLACEID,
+                    PlaceContract.PlaceEntry.COLUMN_NAME,
+                    PlaceContract.PlaceEntry.COLUMN_VICINITY,
+                    PlaceContract.PlaceEntry.COLUMN_ICON,
+            };
+
+    // Defining Colummn Indices....
+    public static final int COL_ID = 0;
+    public static final int COL_PLACEID = 1;
+    public static final int COL_NAME = 2;
+    public static final int COL_VICINITY = 3;
+    public static final int COL_ICON = 4;
+    // UPTIL HERE
+
+
+    MyObject mClicked;
+
+    public boolean favMenuSelected = false;
+    List<MyObject> listMyObject;
 
 
     /**
@@ -107,18 +145,53 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return null;
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        Log.v(TAG, "onCreateLoader------------Called Successfully-----------------");
+
+        String url = "content://dimpesh.com.nearbyeasy.app/place";
+
+        Uri fetchUri = Uri.parse(url);
+        return new CursorLoader(getActivity(), fetchUri, PLACE_COLUMNS, null, null, null);
     }
 
+    // onLoadFinished is called when the Data is Ready...
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
+        Log.v(TAG, "onLoadFinished----------Called Successfully-----------------");
+        // Check If This Works...
+/*
+        if (c.moveToFirst()) {
+            do {
+                {
+                    String result = "S. NUMBER           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry._ID))
+                            + "\nPLACE_ID             : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PLACEID))
+                            + "\nPLACE NAME          : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_NAME))
+                            + "\nPLACEE PHOTO REF       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHOTOREF))
+                            + "\nPLACE ICON   : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ICON))
+                            + "\nPLACE OPEN           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_OPEN))
+                            + "\nPLACE PHONE         : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHONE))
+                            + "\nMOVIE ADDRESS         : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ADDRESS))
+                            + "\nMOVIE VICINITY       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_VICINITY)).toString();
 
+                    Log.v("RESULT_QUERY VERBOSE", result);
+                }
+            } while (c.moveToNext());
+        }
+*/
+        if (placeCursorAdapter == null)
+            placeCursorAdapter = new PlaceCursorAdapter(getContext(), c, PLACE_LOADER);
+        placeCursorAdapter.swapCursor(c);
+        Log.v("Favourite VERBOSE", String.valueOf(favMenuSelected));
+
+        if (favMenuSelected)
+            lv.setAdapter(placeCursorAdapter);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        Log.v(TAG, "onLoaderReset----------------Called Successfully-----------------");
 
+        placeCursorAdapter.swapCursor(null);
     }
 
     /**
@@ -171,7 +244,8 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                     editorPref.putString("category", selectedText.getText().toString());
                     editorPref.commit();
                     categoryStr = pref.getString("category", "atm");
-                    new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + ltd + "," + lng + "&radius=" + rangeStr + "&types=" + categoryStr + "&name=&sensor=false&key="+ BuildConfig.MyGoogleMapKey);
+                    favMenuSelected = false;
+                    new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + ltd + "," + lng + "&radius=" + rangeStr + "&types=" + categoryStr + "&name=&sensor=false&key=" + BuildConfig.MyGoogleMapKey);
 
                 }
             }
@@ -187,8 +261,16 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_range) {
+            favMenuSelected = false;
 //            Toast.makeText(getActivity(),"Menu Clicked",Toast.LENGTH_SHORT).show();
             chooseRange();
+            return true;
+        }
+
+        if (id == R.id.action_favorite) {
+            favMenuSelected = true;
+            getLoaderManager().restartLoader(PLACE_LOADER, null, this);
+//            viewFavorite();
             return true;
         }
 
@@ -225,26 +307,68 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 /*
         new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+ltd+","+lng+"&radius=" + rangeStr + "&types=" + categoryStr + "&name=&sensor=false&key="++ BuildConfig.MyGoogleMapKey);
 */
-        String fakeLtd="26.2807";
-        String fakeLng="73.0272";
+        String fakeLtd = "26.2807";
+        String fakeLng = "73.0272";
 
 
-        new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+fakeLtd+","+fakeLng+"&radius=" + "15000" + "&types=" + "restaurent" + "&name=&sensor=false&key="+ BuildConfig.MyGoogleMapKey);
+        new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + fakeLtd + "," + fakeLng + "&radius=" + "15000" + "&types=" + "restaurent" + "&name=&sensor=false&key=" + BuildConfig.MyGoogleMapKey);
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //                Toast.makeText(getActivity(),position+"",Toast.LENGTH_SHORT).show();
-                String key = mobj[position].getId();
+//                String key = mobj[position].getId();
 /*
                 Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, key).putExtra("name", mobj[position].getName());
                 startActivity(intent);
 */
-                mCallbacks.onItemSelected(mobj[position]);
+                if (favMenuSelected == false) {
+                    Log.v(TAG,"online Movie Clicked");
+                    mCallbacks.onItemSelected(mobj[position]);
 
+                }
+                else
+                {
+                    Cursor cursor= (Cursor) parent.getItemAtPosition(position);
+                    MyObject mo=new MyObject();
+                    Log.v(TAG,"offline Movie Clicked.");
+
+                    mo.setName(cursor.getString(cursor.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_NAME)));
+                    mo.setId(cursor.getString(cursor.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PLACEID)));
+                    mo.setVicinity(cursor.getString(cursor.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_VICINITY)));
+                    mo.setIcon(cursor.getString(cursor.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ICON)));
+
+
+                    mCallbacks.onItemSelected(mo);
+                }
             }
         });
         setHasOptionsMenu(true);
+
+        // Database saved details shown Here...
+
+        // CursorAdapter work...
+        String url = "content://dimpesh.com.nearbyeasy.app/place";
+
+        Uri fetchUri = Uri.parse(url);
+        Cursor c = getContext().getContentResolver().query(fetchUri, null, null, null, null);
+        if (c.moveToFirst()) {
+            do {
+                {
+                    String result = "S. NUMBER           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ID))
+                            + "\nPHONE             : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHONE))
+                            + "\nNAME          : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_NAME))
+                            + "\nVICINITY       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_VICINITY))
+                            + "\nOPEN   : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_OPEN))
+                            + "\nPHOTOREF           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHOTOREF))
+                            + "\nADDRESS         : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ADDRESS))
+                            + "\nPLACEID       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PLACEID)).toString();
+
+                    Log.v("RESULT_QUERY VERBOSE", result);
+                }
+            } while (c.moveToNext());
+        }
+// Uptil Here...
 
         return view;
     }
@@ -254,7 +378,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         ltd = location.getLatitude();
         lng = location.getLongitude();
 
-        Log.v(TAG,ltd+"/"+lng);
+        Log.v(TAG, ltd + "/" + lng);
 
     }
 
@@ -276,10 +400,10 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
-        if ( ContextCompat.checkSelfPermission( getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions( getActivity(), new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  },
-                    123 );
+            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                    123);
         }
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
@@ -290,7 +414,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
             //If everything went fine lets get latitude and longitude
             ltd = location.getLatitude();
             lng = location.getLongitude();
-            Log.v(TAG,ltd+"/"+lng);
+            Log.v(TAG, ltd + "/" + lng);
 //            Toast.makeText(this, currentLatitude + " WORKS " + currentLongitude + "", Toast.LENGTH_LONG).show();
         }
     }
@@ -335,13 +459,13 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Log.v(TAG,"onPreExecute Called");
+            Log.v(TAG, "onPreExecute Called");
             pg.setVisibility(View.VISIBLE);
         }
 
         @Override
         protected MyObject[] doInBackground(String... arg0) {
-            Log.v(TAG,"doInBackground Called");
+            Log.v(TAG, "doInBackground Called");
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
@@ -371,7 +495,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                 response = buffer.toString();
 
                 // Demo Response
-                response="{\n" +
+                response = "{\n" +
                         "   \"html_attributions\" : [],\n" +
                         "   \"next_page_token\" : \"CoQC_wAAAK1Ju5DS3mzD-HvHL4i374JYK6xj5Km1Flgcj952L59zu0QnDxBa4nZCPNG98z0b_mxvJSCVJzAzcFJdTm3K9B15GCHcSNsDQ2Lyt3LC4FYYdWV3DzCeiYJq14E1nyYmX7tfQypgRG5VYzwQnK_LFXDD-FjsSfsY2_IYrTra3M2mivYFn1BcJBqw25jv8ZOyxkYz2Th3q8RIe_BvQFtFWpDq39Qmyx9cgp0Q66nwFlWgYHf4Nb4SEWbqP7gITY8T-Xs2I4J102QJ-0yTWYpAI-Glnc3JAGC6YfVkwP46fATMB94zYDg6lNIZOw-pofEFuDaYv39nagEckd2TdJRK0TkSEPAOSvNCYJchaScvQ5UmyGAaFLL5gMAEQAUzqU0AHT_-dWAt1gvk\",\n" +
                         "   \"results\" : [\n" +
@@ -992,7 +1116,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                 JSONObject obj1 = new JSONObject(response);
 
                 JSONArray arr1 = obj1.getJSONArray("results");
-                Log.v(TAG,arr1+"");
+                Log.v(TAG, arr1 + "");
                 mobj = new MyObject[arr1.length()];
                 for (int i = 0; i < arr1.length(); i++) {
                     mobj[i] = new MyObject();
@@ -1001,7 +1125,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                     mobj[i].setVicinity(obj2.getString("vicinity"));
                     mobj[i].setIcon(obj2.getString("icon"));
                     mobj[i].setId(obj2.getString("place_id"));
- //                   mobj[i].setRating(obj2.getString("rating"));
+                    //                   mobj[i].setRating(obj2.getString("rating"));
                 }
 
                 Log.v(TAG, mobj + "");
@@ -1023,11 +1147,11 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         @Override
         protected void onPostExecute(MyObject[] result) {
             super.onPostExecute(result);
-            Log.v(TAG,"onPostExecute Called");
+            Log.v(TAG, "onPostExecute Called");
 
             pg.setVisibility(View.INVISIBLE);
             if (result == null) {
-                Toast.makeText(getActivity(), "Data Not Available\n Try Again Later...",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Data Not Available\n Try Again Later...", Toast.LENGTH_SHORT).show();
             } else {
                 ArrayList<String> nameArr = new ArrayList<String>();
                 ArrayList<String> iconArr = new ArrayList<String>();
@@ -1045,7 +1169,15 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 //    			lst.setAdapter(new ArrayAdapter<String>(getApplicationContext(), R.layout.row,result));
 
 //                lst.setAdapter(new MyAdapter(getApplicationContext(),result));
+                    if (!favMenuSelected) {
+                        mAdapter = new MyListAdapter(getActivity(), nameArr, iconArr, vicArr);
+                        lv.setAdapter(mAdapter);
+                    }
+                    mAdapter.notifyDataSetChanged();
+
+/*
                     lv.setAdapter(new MyListAdapter(getActivity(), nameArr, iconArr, vicArr));
+*/
                 } else {
                     Toast.makeText(getActivity(), getString(R.string.toast_error), Toast.LENGTH_SHORT).show();
                 }
@@ -1071,7 +1203,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                 editorPref.putString("range", range);
                 editorPref.commit();
                 rangeStr = pref.getString("range", "2000");
-                new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+ltd+","+lng+"&radius=" + rangeStr + "&types=" + categoryStr + "&name=&sensor=false&key="+BuildConfig.MyGoogleMapKey);
+                new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + ltd + "," + lng + "&radius=" + rangeStr + "&types=" + categoryStr + "&name=&sensor=false&key=" + BuildConfig.MyGoogleMapKey);
                 Toast.makeText(getActivity(), "Range Update Successful", Toast.LENGTH_SHORT).show();
             }
         });
@@ -1138,6 +1270,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         // Reset the active callbacks interface to the dummy implementation.
         mCallbacks = sDummyCallbacks;
     }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -1146,12 +1279,13 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
             outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
         }
     }
+
     /**
      * Turns on activate-on-click mode. When this mode is on, list items will be
      * given the 'activated' state when touched.
      */
     public void setActivateOnItemClick(boolean activateOnItemClick) {
-        Log.v("ABC : ","setActivatedOnItemClick Executed");
+        Log.v("ABC : ", "setActivatedOnItemClick Executed");
 
         // When setting CHOICE_MODE_SINGLE, ListView will automatically
         // give items the 'activated' state when touched.
@@ -1162,7 +1296,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 
     private void setActivatedPosition(int position) {
 
-        Log.v("ABC : ","setActivatedPosition Executed");
+        Log.v("ABC : ", "setActivatedPosition Executed");
         if (position == GridView.INVALID_POSITION) {
             lv.setItemChecked(mActivatedPosition, false);
         } else {
@@ -1170,6 +1304,10 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         }
 
         mActivatedPosition = position;
+    }
+
+    public void viewFavorite() {
+
     }
 
 }

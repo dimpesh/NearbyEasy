@@ -16,4 +16,5 @@
     <string name="add_success">Added To Favorite Successfully...</string>
     <string name="remove_success">Removed From Favorite Successfully ...</string>
     <string name="null_data">Null Data</string>
+    <string name="favorite">Favorite</string>
 </resources>

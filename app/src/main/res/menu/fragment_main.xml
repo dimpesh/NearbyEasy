@@ -14,5 +14,10 @@
         app:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_mapmode"
         />
+    <item
+        android:id="@+id/action_favorite"
+        android:title="@string/favorite"
+        app:showAsAction="never"
+        />
 
 </menu>
