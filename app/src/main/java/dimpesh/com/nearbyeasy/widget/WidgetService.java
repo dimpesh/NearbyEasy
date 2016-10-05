@@ -4,8 +4,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Binder;
 import android.util.Log;
+import android.widget.AdapterView;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
+
+import dimpesh.com.nearbyeasy.Data.PlaceContract;
 
 /**
  * Created by DIMPESH : ${month}
@@ -14,21 +17,17 @@ import android.widget.RemoteViewsService;
 public class WidgetService extends RemoteViewsService {
     public final String TAG = WidgetService.class.getSimpleName();
 
-    /*
-        private static final String [] STOCK_COLUMNS={
-                QuoteColumns._ID,
-                QuoteColumns.SYMBOL,
-                QuoteColumns.BIDPRICE,
-                QuoteColumns.PERCENT_CHANGE
-        };
-    */
-// Index must match to the Projection for retrieving database content.
-/*
-    static final int INDEX_STOCK_ID = 0;
-    static final int INDEX_STOCK_SYMBOL = 1;
-    static final int INDEX_STOCK_BIDPRICE = 2;
-    static final int INDEX_STOCK_PERCENT_CHANGE = 3;
-*/
+    private static final String[] PLACE_COLUMNS = {
+            PlaceContract.PlaceEntry.COLUMN_ID,
+            PlaceContract.PlaceEntry.COLUMN_NAME,
+            PlaceContract.PlaceEntry.COLUMN_ICON,
+            PlaceContract.PlaceEntry.COLUMN_VICINITY
+    };
+    // Index must match to the Projection for retrieving database content.
+    static final int INDEX_COLUMN_ID = 0;
+    static final int INDEX_COLUMN_NAME = 1;
+    static final int INDEX_COLUMN_ICON = 2;
+    static final int INDEX_COLUMN_VICINITY = 3;
 
 
     @Override
@@ -45,25 +44,28 @@ public class WidgetService extends RemoteViewsService {
             public void onDataSetChanged() {
                 if (data != null) {
                     data.close();
+                }
+                final long identityToken = Binder.clearCallingIdentity();
 
-                    final long identityToken = Binder.clearCallingIdentity();
-
-                    try {
+                try {
 
 /*
-                        data = WidgetService.this.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
+                        data = WidgetService.this.getContentResolver().query(PlaceContract.PlaceEntry.CONTENT_URI,
                                 new String[]{QuoteColumns.SYMBOL,QuoteColumns.BIDPRICE,
                                         QuoteColumns.PERCENT_CHANGE,
                                         QuoteColumns.CHANGE,}, QuoteColumns.ISCURRENT + " = ?",
                                 new String[]{"1"}, null);
-
-                        data.moveToFirst();
 */
-                        Binder.restoreCallingIdentity(identityToken);
+                    data = WidgetService.this.getContentResolver().query(PlaceContract.PlaceEntry.CONTENT_URI,
+                            PLACE_COLUMNS, null,
+                            null, null);
 
-                    } catch (Exception e) {
-                        Log.v("Widget Gen. Exception :", e.getMessage());
-                    }
+
+                    data.moveToFirst();
+                    Binder.restoreCallingIdentity(identityToken);
+
+                } catch (Exception e) {
+                    Log.v("Widget Gen. Exception :", e.getMessage());
                 }
 
 
@@ -85,14 +87,32 @@ public class WidgetService extends RemoteViewsService {
 
             @Override
             public RemoteViews getViewAt(int position) {
-                return null;
+                if (position == AdapterView.INVALID_POSITION ||
+                        data == null || !data.moveToPosition(position)) {
+                    return null;
+                }
+                RemoteViews views = new RemoteViews(getPackageName(),
+                        android.R.layout.simple_list_item_1);
+
+                String name = data.getString(data.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_NAME));
+                String vicinity = data.getString(data.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_VICINITY));
+                String icon = data.getString(data.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ICON));
+
+                views.setTextViewText(android.R.id.text1,name+"\t\t"+vicinity);
+
+                final Intent fillInIntent = new Intent();
+/*
+                fillInIntent.putExtra("symbol", data.getString(data.getColumnIndex(QuoteColumns.SYMBOL)));
+*/
+                views.setOnClickFillInIntent(android.R.id.text1, fillInIntent);
+
+
+                return views;
             }
 
             @Override
             public RemoteViews getLoadingView() {
                 return new RemoteViews(getPackageName(), android.R.layout.simple_list_item_1);
-                // comment this line..after uncommenting above
-                //return null;
             }
 
             @Override
@@ -102,12 +122,9 @@ public class WidgetService extends RemoteViewsService {
 
             @Override
             public long getItemId(int position) {
-/*
                 if (data.moveToPosition(position))
-                    return data.getLong(INDEX_STOCK_ID);
-*/
-                return (long)position;
-//                return position;
+                    return data.getLong(INDEX_COLUMN_ID);
+                return position;
             }
 
             @Override
