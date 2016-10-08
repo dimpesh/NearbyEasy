@@ -9,6 +9,7 @@ import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import dimpesh.com.nearbyeasy.Data.PlaceContract;
+import dimpesh.com.nearbyeasy.R;
 
 /**
  * Created by DIMPESH : ${month}
@@ -49,13 +50,6 @@ public class WidgetService extends RemoteViewsService {
 
                 try {
 
-/*
-                        data = WidgetService.this.getContentResolver().query(PlaceContract.PlaceEntry.CONTENT_URI,
-                                new String[]{QuoteColumns.SYMBOL,QuoteColumns.BIDPRICE,
-                                        QuoteColumns.PERCENT_CHANGE,
-                                        QuoteColumns.CHANGE,}, QuoteColumns.ISCURRENT + " = ?",
-                                new String[]{"1"}, null);
-*/
                     data = WidgetService.this.getContentResolver().query(PlaceContract.PlaceEntry.CONTENT_URI,
                             PLACE_COLUMNS, null,
                             null, null);
@@ -65,7 +59,7 @@ public class WidgetService extends RemoteViewsService {
                     Binder.restoreCallingIdentity(identityToken);
 
                 } catch (Exception e) {
-                    Log.v("Widget Gen. Exception :", e.getMessage());
+                    Log.v(TAG,getString(R.string.widget_service_exception)+ e.getMessage());
                 }
 
 

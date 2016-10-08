@@ -22,16 +22,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-/*
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Need to add custom search feature.", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-*/
 
 
         if (findViewById(R.id.place_detail_container) != null) {
@@ -60,9 +50,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             // adding or replacing the detail fragment using a
             // fragment transaction.
             Bundle arguments = new Bundle();
-/*
-            arguments.putParcelable("movie", m);
-*/
             arguments.putParcelable("place",m);
             DetailActivityFragment fragment = new DetailActivityFragment();
             fragment.setArguments(arguments);
@@ -71,9 +58,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                     .commit();
 
         } else {
-            // In single-pane mode, simply start the detail activity
-            // for the selected item ID.
-//            Intent detailIntent = new Intent(this, MovieDetailActivity.class);
             Intent detailIntent = new Intent(this, DetailActivity.class);
             detailIntent.putExtra("place", m);
             startActivity(detailIntent);

@@ -66,17 +66,6 @@ public class MyListAdapter extends BaseAdapter {
                 .resize(50,50)
                 .centerCrop()
                 .into(iv_icon);
-/*
-		itemView.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-                Intent intent=new Intent(c, DetailsActivity.class);
-                Toast.makeText(c,"Clicked...",Toast.LENGTH_SHORT).show();
-			}
-		});
-
-*/
         itemView.setContentDescription(name.get(position));
         return itemView;
     }

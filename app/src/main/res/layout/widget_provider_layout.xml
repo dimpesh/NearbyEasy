@@ -11,13 +11,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="#ffffff"
-        android:padding="4dp">
+        android:padding="@dimen/widget_provider_padding">
         <ListView
             android:id="@+id/widget_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:divider="@null"
-            android:dividerHeight="0dp"/>
+            android:dividerHeight="@dimen/widget_list_view_divider_height"/>
 
         <!--                tools:listitem="@layout/widget_stock_list_item"
 -->

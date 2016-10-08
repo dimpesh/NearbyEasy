@@ -65,7 +65,6 @@ public class PlaceCursorAdapter extends CursorAdapter {
                 .into(iv_icon);
     }
 
-    // tried implementing getCount... can be replaced...
 
     @Override
     public int getCount() {

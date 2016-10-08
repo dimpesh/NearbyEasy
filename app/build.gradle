@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
     defaultConfig {
         applicationId "dimpesh.com.nearbyeasy"
         minSdkVersion 15
-        targetSdkVersion 24
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -16,7 +16,7 @@ android {
         myconfig {
             keyAlias 'alias'
             keyPassword 'password'
-            storeFile file('../keystore.jks')
+            storeFile file('../mykey.jks')
             storePassword 'password'
         }
     }
@@ -40,11 +40,12 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile 'com.android.support:design:24.2.0'
-    compile 'com.google.android.gms:play-services-location:9.6.1'
+    compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:design:22.2.0'
+    compile 'com.google.android.gms:play-services-location:9.4.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.facebook.stetho:stetho:1.4.1'
-    compile 'com.google.android.gms:play-services-ads:9.6.1'
+    debugCompile 'com.facebook.stetho:stetho:1.4.1'
+    compile 'com.google.android.gms:play-services-ads:9.4.0'
     testCompile 'junit:junit:4.12'
+
 }

@@ -24,7 +24,7 @@
     android:layout_height="wrap_content">
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="@dimen/main_image_height"
         android:scaleType="fitXY"
         android:id="@+id/detail_img_head"
         android:src="@drawable/img_placeholder"/>
@@ -45,16 +45,16 @@
         android:layout_height="wrap_content">
     <ImageView
         android:id="@+id/detail_img_icon"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
         android:layout_below="@+id/detail_img_head"
         android:src="@drawable/img_placeholder"
         android:scaleType="centerCrop"/>
 
         <TextView
             android:id="@+id/detail_rating"
-            android:layout_marginLeft="60dp"
-            android:textSize="32sp"
+            android:layout_marginLeft="@dimen/rating_margin_left"
+            android:textSize="@dimen/rating_size"
             android:textColor="@color/colorPrimaryDark"
             android:layout_gravity="center"
             android:layout_width="wrap_content"
@@ -78,7 +78,7 @@
         android:layout_below="@+id/detail_admob"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="40sp"
+        android:textSize="@dimen/phone_text_size"
         android:autoLink="phone"
         android:text=""
         android:gravity="center"
@@ -94,7 +94,7 @@
         android:id="@+id/detail_address_title"
         android:layout_marginTop="@dimen/margin_top_phone"
         android:layout_below="@+id/detail_phone"
-        android:textSize="48sp"/>
+        android:textSize="@dimen/address_heading_text_size"/>
 
     <TextView
         android:id="@+id/detail_address"
@@ -112,7 +112,7 @@
         android:id="@+id/detail_vicinity_title"
         android:layout_marginTop="@dimen/margin_top_phone"
         android:layout_below="@+id/detail_address"
-        android:textSize="48sp"/>
+        android:textSize="@dimen/vicinity_heading_text_size"/>
 
     <TextView
         android:id="@+id/detail_vicinity"
@@ -132,7 +132,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/dislike"
+        android:src="@drawable/dislike"
         android:contentDescription="@string/add_to_fav"
         android:layout_below="@+id/detail_vicinity"
         android:layout_alignParentRight="true"

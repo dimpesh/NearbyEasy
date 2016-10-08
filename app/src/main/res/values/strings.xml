@@ -16,6 +16,20 @@
     <string name="add_success">Added To Favorite Successfully...</string>
     <string name="remove_success">Removed From Favorite Successfully ...</string>
     <string name="null_data">Null Data</string>
-    <string name="favorite">Favorite</string>
+    <string name="favorite">Favorite Places</string>
     <string name="add_to_fav">Favorite Button</string>
+    <string name="onpost_result_error">Data Not Available  Try Again Later...</string>
+    <string name="alert_title">Range For Searching</string>
+    <string name="alert_message">Enter range in Meters</string>
+    <string name="range_success">Range Update Successful</string>
+    <string name="widget_service_exception">Widget Gen. Exception :</string>
+    <string name="fav_verbose">Favourite VERBOSE</string>
+    <string name="parcelable_tag">Parcelable</string>
+    <string name="description">Description</string>
+    <string name="list_item_title">Title</string>
+    <string name="list_item_subtitle">Category</string>
+    <string name="other">Other Places</string>
+    <string name="permission_request">Enable Location Permission from Permission Manager option</string>
+    <string name="disconnect">Disconnected. Please re-connect.</string>
+    <string name="network_lost">Network lost. Please re-connect.</string>
 </resources>

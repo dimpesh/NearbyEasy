@@ -1,7 +1,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="5dp" >
+    android:layout_margin="@dimen/widget_margin" >
 
     <LinearLayout
         android:id="@+id/widget"
@@ -16,25 +16,25 @@
             android:layout_height="wrap_content"
             android:background="#aaDEDFDE"
             android:orientation="horizontal"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp" >
+            android:paddingLeft="@dimen/widget_main_padding_left"
+            android:paddingRight="@dimen/widget_main_padding_right" >
 
             <ImageView
                 android:id="@+id/widgetImgLauncher"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="@dimen/widget_image_width"
+                android:layout_height="@dimen/width_image_height"
                 android:layout_gravity="center_vertical"
                 android:src="@mipmap/ic_launcher" />
 
             <LinearLayout
                 android:id="@+id/widgetTopBar"
-                android:layout_width="0dp"
+                android:layout_width="@dimen/top_bar_width"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:paddingBottom="4dp"
-                android:paddingLeft="8dp"
-                android:paddingTop="4dp" >
+                android:paddingBottom="@dimen/widget_top_bar_padding_bottom"
+                android:paddingLeft="@dimen/widget_top_bar_padding_left"
+                android:paddingTop="@dimen/widget_top_bar_padding_top" >
 
                 <TextView
                     android:gravity="center"
@@ -59,7 +59,7 @@
         <TextView
             android:id="@+id/widget_empty"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
+            android:layout_height="@dimen/widget_empty_textview_height"
             android:background="#aaa" />
 
         <ListView

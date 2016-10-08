@@ -1,6 +1,8 @@
 package dimpesh.com.nearbyeasy;
 
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -35,13 +37,14 @@ import java.net.ProtocolException;
 import java.net.URL;
 
 import dimpesh.com.nearbyeasy.Data.PlaceContract;
+import dimpesh.com.nearbyeasy.widget.WidgetProvider;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class DetailActivityFragment extends Fragment {
 
-    public static final String TAG = "DetailsActivityFragment";
+    public static final String TAG = DetailActivityFragment.class.getSimpleName();
     boolean isFavourite = false;
     ImageView iv_head;
     ProgressBar pg;
@@ -51,7 +54,7 @@ public class DetailActivityFragment extends Fragment {
     TextView phone;
     TextView vicinity;
     FloatingActionButton fab;
-    String title = "Description";
+    String title;
     public static MyObject mRecieved;
     public PlaceObject placeObject = new PlaceObject();
     TextView titleVicinity, titleAddress;
@@ -63,7 +66,7 @@ public class DetailActivityFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.v(TAG, "onCreateView Called");
         final View view = inflater.inflate(R.layout.fragment_detail, container, false);
@@ -80,13 +83,7 @@ public class DetailActivityFragment extends Fragment {
         Courgette = Typeface.createFromAsset(getActivity().getApplicationContext().getAssets(), "Courgette-Regular.ttf");
         BalooBhaina = Typeface.createFromAsset(getActivity().getApplicationContext().getAssets(), "BalooBhaina-Regular.ttf");
 
-        Log.v(TAG, "Parcelable : " + mRecieved.getName());
-        Log.v(TAG, "Parcelable : " + mRecieved.getId());
 
-/*
-        String str = getActivity().getIntent().getExtras().getString(Intent.EXTRA_TEXT);
-        String name = getActivity().getIntent().getExtras().getString("name");
-*/
         String str = mRecieved.getId();
         String name = mRecieved.getName();
         title = name;
@@ -161,25 +158,6 @@ public class DetailActivityFragment extends Fragment {
                     Toast.makeText(getActivity(), getString(R.string.add_success), Toast.LENGTH_SHORT).show();
                     fab.setImageResource(R.drawable.like);
                     isFavourite = true;
-                    String result = "";
-                    Cursor c = getActivity().getApplicationContext().getContentResolver().query(fetchUri, null, null, null, null);
-                    if (c.moveToFirst()) {
-                        do {
-                            {
-                                result = "S. NUMBER           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry._ID))
-                                        + "\nPLACE_ID             : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PLACEID))
-                                        + "\nPLACE NAME          : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_NAME))
-                                        + "\nPLACEE PHOTO REF       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHOTOREF))
-                                        + "\nPLACE ICON   : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ICON))
-                                        + "\nPLACE OPEN           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_OPEN))
-                                        + "\nPLACE PHONE         : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHONE))
-                                        + "\nMOVIE ADDRESS         : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ADDRESS))
-                                        + "\nMOVIE VICINITY       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_VICINITY)).toString();
-
-                                Log.v("RESULT_QUERY VERBOSE", result);
-                            }
-                        } while (c.moveToNext());
-                    }
 
                 }
                 else
@@ -191,6 +169,18 @@ public class DetailActivityFragment extends Fragment {
 
                 }
 
+                // Handling widget Update on Changing Favorite
+/*
+                ComponentName name = new ComponentName(getActivity(), WidgetProvider.class);
+                int[] ids = AppWidgetManager.getInstance(getActivity()).getAppWidgetIds(name);
+
+                Intent intent = new Intent(getActivity(), WidgetProvider.class);
+                intent.setAction(WidgetProvider.ACTION_UPDATE);
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                getActivity().sendBroadcast(intent);
+*/
+
+                sendUpdateIntent(getActivity().getApplicationContext());
             }
         });
 
@@ -211,7 +201,6 @@ public class DetailActivityFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
-            // TODO Auto-generated method stub
             super.onPreExecute();
             pg.setVisibility(View.VISIBLE);
         }
@@ -248,12 +237,6 @@ public class DetailActivityFragment extends Fragment {
                 JSONObject obj1 = new JSONObject(response);
                 JSONObject obj2 = obj1.getJSONObject("result");
 
-                Log.v(TAG, obj2.getString("formatted_phone_number"));
-                Log.v(TAG, obj2.getString("icon"));
-                Log.v(TAG, obj2.getString("international_phone_number"));
-                Log.v(TAG, obj2.getString("name"));
-                Log.v(TAG, obj2.getString("vicinity"));
-                Log.v(TAG, obj2.getString("website"));
                 mObj.setAddr(obj2.getString("formatted_address"));
                 mObj.setPhno(obj2.getString("formatted_phone_number"));
                 mObj.setIcon(obj2.getString("icon"));
@@ -265,9 +248,7 @@ public class DetailActivityFragment extends Fragment {
                 JSONArray arr = obj2.getJSONArray("photos");
                 JSONObject obj3 = arr.getJSONObject(0);
                 String str = obj3.getString("photo_reference");
-                Log.v("String", str);
                 mObj.setPhotoReference(obj3.getString("photo_reference"));
-                Log.v("Photo Referemce GET : ", "Reference" + mObj.getPhotoReference());
                 JSONObject obj4 = obj2.getJSONObject("geometry");
                 JSONObject obj5 = obj4.getJSONObject("location");
                 JSONObject open_hrs = obj2.getJSONObject("opening_hours");
@@ -280,7 +261,6 @@ public class DetailActivityFragment extends Fragment {
 
                 return mObj;
             } catch (JSONException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (ProtocolException e) {
                 e.printStackTrace();
@@ -302,8 +282,8 @@ public class DetailActivityFragment extends Fragment {
                 Toast.makeText(getActivity(), getString(R.string.null_data), Toast.LENGTH_SHORT).show();
             }
             try {
-                Log.v("LA", result.getLatitude());
-                Log.v("LO", result.getLongitude());
+                Log.v(TAG,"latitude :"+ result.getLatitude());
+                Log.v(TAG, "longitude : "+result.getLongitude());
 
                 Log.v(TAG, "result" + result.getPhotoReference());
             } catch (Exception e) {
@@ -394,4 +374,10 @@ public class DetailActivityFragment extends Fragment {
     }
 
 
+    public static void sendUpdateIntent(Context context)
+    {
+        Intent i = new Intent(context, WidgetProvider.class);
+        i.setAction(WidgetProvider.DATABASE_CHANGED);
+        context.sendBroadcast(i);
+    }
 }
