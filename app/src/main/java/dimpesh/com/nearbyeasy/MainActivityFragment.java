@@ -10,14 +10,12 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -67,6 +65,10 @@ import static android.content.Context.MODE_WORLD_WRITEABLE;
 public class MainActivityFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener, LoaderManager.LoaderCallbacks<Cursor> {
 
+
+    // Widget Intent
+    public static String ACTION_DATA_UPDATED="dimpesh.com.nearbyeasy.app.ACTION_DATA_UPDATED";
+
     //  Shared Preferences Object Data...
     SharedPreferences pref;
     SharedPreferences.Editor editorPref;
@@ -79,7 +81,11 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     MyObject[] mobj = new MyObject[]{};
     String rangeStr;
     String categoryStr;
+    private boolean mIsInForegroundMode=false;
+
     MyListAdapter mAdapter;
+    ArrayList<MyObject> mArrList=new ArrayList<MyObject>();
+    Spinner spinner;
 
     // for location...
     double lng;
@@ -87,15 +93,22 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-/*
-    private double currentLatitude;
-    private double currentLongitude;
-*/
 
 
     /// Tablet UI Mode Design
     private static final String STATE_ACTIVATED_POSITION = "activated_position";
 
+
+    // Variables for making URL
+    String BASE_URL="https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
+    String APIKEY_KEY="key";
+    String SENSOR_KEY="sensor";
+    String SENSOR_VALUE="false";
+    String NAME_KEY="name";
+    String NAME_VALUE="";
+    String TYPES_KEY="types";
+    String RADIUS_KEY="radius";
+    String LOCATION_KEY="location";
 
     // For Content Provider and Loader
     // Declaring MyCursorAdapter variable and using it in programmin..
@@ -127,6 +140,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 
     public boolean favMenuSelected = false;
     List<MyObject> listMyObject;
+    int position=0;
 
 
     /**
@@ -142,7 +156,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        Log.v(TAG, "onCreateLoader------------Called Successfully-----------------");
+//        Log.v(TAG, "onCreateLoader------------Called Successfully-----------------");
 
         String url = "content://dimpesh.com.nearbyeasy.app/place";
 
@@ -153,19 +167,23 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     // onLoadFinished is called when the Data is Ready...
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
-        Log.v(TAG, "onLoadFinished----------Called Successfully-----------------");
+//        Log.v(TAG, "onLoadFinished----------Called Successfully-----------------");
         if (placeCursorAdapter == null)
             placeCursorAdapter = new PlaceCursorAdapter(getContext(), c, PLACE_LOADER);
         placeCursorAdapter.swapCursor(c);
-        Log.v(TAG, getString(R.string.fav_verbose) + String.valueOf(favMenuSelected));
+//        Log.v(TAG, getString(R.string.fav_verbose) + String.valueOf(favMenuSelected));
 
         if (favMenuSelected)
             lv.setAdapter(placeCursorAdapter);
+
+
+        getActivity().sendBroadcast(new Intent("com.widget.FORCE_WIDGET_UPDATE"));
+
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        Log.v(TAG, "onLoaderReset----------------Called Successfully-----------------");
+//        Log.v(TAG, "onLoaderReset----------------Called Successfully-----------------");
 
         placeCursorAdapter.swapCursor(null);
     }
@@ -206,23 +224,27 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         //   super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_main, menu);
         MenuItem item = menu.findItem(R.id.action_category);
-        Spinner spinner = (Spinner) MenuItemCompat.getActionView(item);
+        spinner = (Spinner) MenuItemCompat.getActionView(item);
         initMenuArray();
 
         spinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, menuArr)); // set the adapter to provide layout of rows and content
+
+        spinner.setSelection(position,true);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 TextView selectedText = (TextView) parent.getChildAt(0);
+
+                position=spinner.getSelectedItemPosition();
                 if (selectedText != null) {
                     selectedText.setTextColor(Color.WHITE);
                     editorPref = pref.edit();
+//                    editorPref.putInt("position",position);
                     editorPref.putString("category", selectedText.getText().toString());
                     editorPref.commit();
                     categoryStr = pref.getString("category", "atm");
                     favMenuSelected = false;
-                    new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + ltd + "," + lng + "&radius=" + rangeStr + "&types=" + categoryStr + "&name=&sensor=false&key=" + BuildConfig.MyGoogleMapKey);
-
+                    fetchDataOnMenuChange();
                 }
             }
 
@@ -263,7 +285,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         pref = getActivity().getApplicationContext().getSharedPreferences("settings", MODE_WORLD_WRITEABLE);
 
-
+//        Log.v(TAG,"onCreateView called");
         lv = (ListView) view.findViewById(R.id.ma_list);
         empty = view.findViewById(R.id.empty);
         lv.setEmptyView(empty);
@@ -271,7 +293,8 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         pg = (ProgressBar) view.findViewById(R.id.ma_pg);
 
         rangeStr = pref.getString("range", "2000");
-        categoryStr = pref.getString("category", "atm");
+            categoryStr = pref.getString("category", "atm");
+//        Log.v(TAG,categoryStr);
         mGoogleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
                 // The next two lines tell the new client that “this” current class will handle connection stuff
                 .addConnectionCallbacks(this)
@@ -280,25 +303,19 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                 .addApi(LocationServices.API)
                 .build();
 
-/*
-        mLocationRequest = LocationRequest.create()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(10 * 1000)        // 10 seconds, in milliseconds
-                .setFastestInterval(1 * 1000);
-*/
-        new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + ltd + "," + lng + "&radius=" + rangeStr + "&types=" + categoryStr + "&name=&sensor=false&key=" + BuildConfig.MyGoogleMapKey);
+        fetchDataOnMenuChange();
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (favMenuSelected == false) {
-                    Log.v(TAG, "online Movie Clicked");
+//                    Log.v(TAG, "online Movie Clicked");
                     mCallbacks.onItemSelected(mobj[position]);
 
                 } else {
                     Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                     MyObject mo = new MyObject();
-                    Log.v(TAG, "offline Movie Clicked.");
+//                    Log.v(TAG, "offline Movie Clicked.");
 
                     mo.setName(cursor.getString(cursor.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_NAME)));
                     mo.setId(cursor.getString(cursor.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PLACEID)));
@@ -322,16 +339,16 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         if (c.moveToFirst()) {
             do {
                 {
-                    String result = "S. NUMBER           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ID))
-                            + "\nPHONE             : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHONE))
-                            + "\nNAME          : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_NAME))
-                            + "\nVICINITY       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_VICINITY))
-                            + "\nOPEN   : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_OPEN))
-                            + "\nPHOTOREF           : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHOTOREF))
-                            + "\nADDRESS         : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ADDRESS))
-                            + "\nPLACEID       : " + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PLACEID)).toString();
+                    String result = c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ID))
+                            +   c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHONE))
+                            + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_NAME))
+                            + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_VICINITY))
+                            + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_OPEN))
+                            + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PHOTOREF))
+                            + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_ADDRESS))
+                            + c.getString(c.getColumnIndex(PlaceContract.PlaceEntry.COLUMN_PLACEID)).toString();
 
-                    Log.v("RESULT_QUERY VERBOSE", result);
+//                    Log.v(TAG, result);
                 }
             } while (c.moveToNext());
         }
@@ -340,170 +357,22 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         return view;
     }
 
-/*      Commented on 8 10 5.00
-    @Override
-    public void onLocationChanged(Location location) {
-        ltd = location.getLatitude();
-        lng = location.getLongitude();
-
-        Log.v(TAG, ltd + "/" + lng);
-
-    }
-*/
-
-/*
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-*/
-
-/*
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-*/
-
-/*
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
-                    123);
-        }
-        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-
-        if (location == null) {
-*/
-/*
-            location=LocationServices.FusedLocationApi.requestLocationUpdates(
-                    mGoogleApiClient, mLocationRequest,getActivity());
-*//*
-
-//            location=LocationServices.FusedLocationApi.requestLocationUpdates()
-
-*/
-/*
-            LocationManager lm=(LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
-
-            lm.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER,0,0,new android.location.LocationListener()
-            {
-
-                @Override
-                public void onLocationChanged(Location location) {
-                    ltd = location.getLatitude();
-                    lng = location.getLongitude();
-                    Log.v(TAG, ltd + "/" + lng);
-
-                }
-
-                @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                }
-
-                @Override
-                public void onProviderEnabled(String provider) {
-
-                }
-
-                @Override
-                public void onProviderDisabled(String provider) {
-
-                }
-            });
-*//*
 
 
-*/
-/*
-            Toast.makeText(getActivity(),getString(R.string.permission_request),Toast.LENGTH_LONG).show();
-            final Intent i = new Intent();
-            i.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            i.addCategory(Intent.CATEGORY_DEFAULT);
-            i.setData(Uri.parse("package:" + getActivity().getPackageName()));
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-            i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-            getActivity().startActivity(i);
-            getActivity().finish();
-*//*
 
-        } else {
-            //If everything went fine lets get latitude and longitude
-            ltd = location.getLatitude();
-            lng = location.getLongitude();
-            Log.v(TAG, ltd + "/" + lng);
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        if (i == CAUSE_SERVICE_DISCONNECTED) {
-            Toast.makeText(getActivity(), getString(R.string.disconnect), Toast.LENGTH_SHORT).show();
-        } else if (i == CAUSE_NETWORK_LOST) {
-            Toast.makeText(getActivity(), getString(R.string.network_lost), Toast.LENGTH_SHORT).show();
-        }
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
- */
-/*
-             * Google Play services can resolve some errors it detects.
-             * If the error has a resolution, try sending an Intent to
-             * start a Google Play services activity that can resolve
-             * error.
-             *//*
-
-        if (connectionResult.hasResolution()) {
-            try {
-                // Start an Activity that tries to resolve the error
-                connectionResult.startResolutionForResult(getActivity(), CONNECTION_FAILURE_RESOLUTION_REQUEST);
-                    */
-/*
-                     * Thrown if Google Play services canceled the original
-                     * PendingIntent
-                     *//*
-
-            } catch (IntentSender.SendIntentException e) {
-                // Log the error
-                e.printStackTrace();
-            }
-        } else {
-                */
-/*
-                 * If no resolution is available, display a dialog to the
-                 * user with the error.
-                 *//*
-
-            Log.e("Error", "Location services connection failed with code " + connectionResult.getErrorCode());
-        }
-    }
-*/
-// Commented uptil Here.  8 10 5.00
 
     public class SearchTask extends AsyncTask<String, Void, MyObject[]> {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Log.v(TAG, "onPreExecute Called");
+//            Log.v(TAG, "onPreExecute Called");
             pg.setVisibility(View.VISIBLE);
         }
 
         @Override
         protected MyObject[] doInBackground(String... arg0) {
-            Log.v(TAG, "doInBackground Called");
+//            Log.v(TAG, "doInBackground Called");
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
@@ -531,9 +400,6 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                     response = null;
                 }
                 response = buffer.toString();
-
-/*
-
                 // Demo Response
                 response = "{\n" +
                         "   \"html_attributions\" : [],\n" +
@@ -1152,7 +1018,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                         "   ],\n" +
                         "   \"status\" : \"OK\"\n" +
                         "}";
-*/
+
                 JSONObject obj1 = new JSONObject(response);
 
                 JSONArray arr1 = obj1.getJSONArray("results");
@@ -1164,6 +1030,8 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                     mobj[i].setVicinity(obj2.getString("vicinity"));
                     mobj[i].setIcon(obj2.getString("icon"));
                     mobj[i].setId(obj2.getString("place_id"));
+
+                    mArrList.add(mobj[i]);
                 }
 
                 return mobj;
@@ -1183,18 +1051,18 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
         @Override
         protected void onPostExecute(MyObject[] result) {
             super.onPostExecute(result);
-            Log.v(TAG, "onPostExecute Called");
+//            Log.v(TAG, "onPostExecute Called");
 
             pg.setVisibility(View.INVISIBLE);
             if (result == null) {
-                Toast.makeText(getActivity(), getString(R.string.onpost_result_error), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), getString(R.string.onpost_result_error), Toast.LENGTH_SHORT).show();
             } else {
                 ArrayList<String> nameArr = new ArrayList<String>();
                 ArrayList<String> iconArr = new ArrayList<String>();
                 ArrayList<String> vicArr = new ArrayList<String>();
 
                 for (MyObject m : result) {
-                    Log.v(TAG, m.getId());
+ //                   Log.v(TAG, m.getId());
                 }
                 for (MyObject m : result) {
                     nameArr.add(m.getName());
@@ -1235,7 +1103,8 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
                 editorPref.putString("range", range);
                 editorPref.commit();
                 rangeStr = pref.getString("range", "2000");
-                new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + ltd + "," + lng + "&radius=" + rangeStr + "&types=" + categoryStr + "&name=&sensor=false&key=" + BuildConfig.MyGoogleMapKey);
+                fetchDataOnMenuChange();
+
                 Toast.makeText(getActivity(), getString(R.string.range_success), Toast.LENGTH_SHORT).show();
             }
         });
@@ -1277,8 +1146,15 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 
     @Override
     public void onResume() {
+//        Log.v(TAG,"onResume called");
         super.onResume();
         mGoogleApiClient.connect();
+        mIsInForegroundMode = true;
+        fetchDataOnMenuChange();
+
+        setRetainInstance(true);
+
+
     }
 
     @Override
@@ -1306,10 +1182,13 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
+
         if (mActivatedPosition != GridView.INVALID_POSITION) {
             // Serialize and persist the activated item position.
             outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
         }
+
     }
 
     /**
@@ -1317,7 +1196,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
      * given the 'activated' state when touched.
      */
     public void setActivateOnItemClick(boolean activateOnItemClick) {
-        Log.v(TAG, "setActivatedOnItemClick Executed");
+//        Log.v(TAG, "setActivatedOnItemClick Executed");
 
         // When setting CHOICE_MODE_SINGLE, ListView will automatically
         // give items the 'activated' state when touched.
@@ -1328,7 +1207,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 
     private void setActivatedPosition(int position) {
 
-        Log.v(TAG, "setActivatedPosition Executed");
+//        Log.v(TAG, "setActivatedPosition Executed");
         if (position == GridView.INVALID_POSITION) {
             lv.setItemChecked(mActivatedPosition, false);
         } else {
@@ -1339,41 +1218,21 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     }
 
     public void fetchDataOnMenuChange() {
-        new SearchTask().execute("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + ltd + "," + lng + "&radius=" + rangeStr + "&types=" + categoryStr + "&name=&sensor=false&key=" + BuildConfig.MyGoogleMapKey);
+        String ltdlng=ltd+","+lng;
+        Uri buildUri=Uri.parse(BASE_URL).buildUpon().appendQueryParameter(LOCATION_KEY,ltdlng)
+                .appendQueryParameter(RADIUS_KEY,rangeStr).appendQueryParameter(TYPES_KEY,categoryStr)
+                .appendQueryParameter(NAME_KEY,NAME_VALUE).appendQueryParameter(SENSOR_KEY,SENSOR_VALUE)
+                .appendQueryParameter(APIKEY_KEY,BuildConfig.MyGoogleMapKey).build();
+        String fetchUrl=buildUri.toString();
+        new SearchTask().execute(fetchUrl);
+
 
     }
 
-    public static void displayPromptForEnablingGPS(final Activity activity) {
-
-        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        final String action = Settings.ACTION_LOCATION_SOURCE_SETTINGS;
-        final String message = "Do you want open GPS setting?";
-
-        builder.setMessage(message)
-                .setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface d, int id) {
-                                activity.startActivity(new Intent(action));
-                                d.dismiss();
-                            }
-                        })
-                .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface d, int id) {
-                                d.cancel();
-                            }
-                        });
-        builder.create().show();
-    }
 
     @Override
     public void onStart() {
         super.onStart();
-        //earlier code
-/*
-        if(mGoogleApiClient!=null)
-        mGoogleApiClient.connect();
-*/
         // new code
         mGoogleApiClient.connect();
         // here
@@ -1383,6 +1242,7 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
     public void onStop() {
         super.onStop();
         mGoogleApiClient.disconnect();
+
     }
     @Override
     public void onConnected(Bundle bundle) {
@@ -1394,22 +1254,27 @@ public class MainActivityFragment extends Fragment implements GoogleApiClient.Co
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.i(TAG,location.toString());
+//        Log.i(TAG,location.toString());
         ltd=location.getLatitude();
         lng=location.getLongitude();
-//        txtOutput.setText(location.getLatitude()+"");
     }
 
 
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.i(TAG,"connection suspended");
+//        Log.i(TAG,"connection suspended");
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.i(TAG,"connection Failed");
+//        Log.i(TAG,"connection Failed");
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
 
     }
 

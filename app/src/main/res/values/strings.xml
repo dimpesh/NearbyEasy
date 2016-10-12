@@ -13,11 +13,11 @@
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
     <string name="no_data">No Data Available... Try Again...</string>
     <string name="toast_error">Error.. Try Later</string>
-    <string name="add_success">Added To Favorite Successfully...</string>
-    <string name="remove_success">Removed From Favorite Successfully ...</string>
+    <string name="add_success">Added To Offline Storage Successfully...</string>
+    <string name="remove_success">Removed From Offline Storage Successfully ...</string>
     <string name="null_data">Null Data</string>
-    <string name="favorite">Favorite Places</string>
-    <string name="add_to_fav">Favorite Button</string>
+    <string name="favorite">Saved Places</string>
+    <string name="add_to_fav">Offline Add Button</string>
     <string name="onpost_result_error">Data Not Available  Try Again Later...</string>
     <string name="alert_title">Range For Searching</string>
     <string name="alert_message">Enter range in Meters</string>
@@ -32,4 +32,11 @@
     <string name="permission_request">Enable Location Permission from Permission Manager option</string>
     <string name="disconnect">Disconnected. Please re-connect.</string>
     <string name="network_lost">Network lost. Please re-connect.</string>
+    <string name="widget_empty_text_string">No place added yet!</string>
+    <string name="recent_places">Last Added Place</string>
+    <string name="open">OPEN</string>
+    <string name="closed">CLOSED</string>
+    <string name="true_daf">true</string>
+    <string name="false_daf">false</string>
+    <string name="gps_question">Do you want open GPS setting</string>
 </resources>

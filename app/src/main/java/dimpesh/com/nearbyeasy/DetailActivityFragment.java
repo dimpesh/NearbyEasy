@@ -1,7 +1,6 @@
 package dimpesh.com.nearbyeasy;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
@@ -37,12 +36,15 @@ import java.net.ProtocolException;
 import java.net.URL;
 
 import dimpesh.com.nearbyeasy.Data.PlaceContract;
-import dimpesh.com.nearbyeasy.widget.WidgetProvider;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class DetailActivityFragment extends Fragment {
+
+    // Widget Intent
+
+    public static String FORCE_WIDGET_UPDATE = "com.widget.FORCE_WIDGET_UPDATE";
 
     public static final String TAG = DetailActivityFragment.class.getSimpleName();
     boolean isFavourite = false;
@@ -62,13 +64,16 @@ public class DetailActivityFragment extends Fragment {
     public Typeface BalooBhaina;
     AdView mAdView;
 
+    String baseUrlStr="https://maps.googleapis.com/maps/api/place/details/json?";
+    String PLACE_KEY="placeid";
+    String APIKEY_KEY="key";
     public DetailActivityFragment() {
     }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.v(TAG, "onCreateView Called");
+//        Log.v(TAG, "onCreateView Called");
         final View view = inflater.inflate(R.layout.fragment_detail, container, false);
         pg = (ProgressBar) view.findViewById(R.id.detail_progress);
         iv_head = (ImageView) view.findViewById(R.id.detail_img_head);
@@ -87,8 +92,9 @@ public class DetailActivityFragment extends Fragment {
         String str = mRecieved.getId();
         String name = mRecieved.getName();
         title = name;
-
-        new SearchDetailTask().execute("https://maps.googleapis.com/maps/api/place/details/json?placeid=" + str + "&key=" + BuildConfig.MyGoogleMapKey);
+        Uri buildUri=Uri.parse(baseUrlStr).buildUpon().appendQueryParameter(PLACE_KEY,str).appendQueryParameter(APIKEY_KEY,BuildConfig.MyGoogleMapKey).build();
+        String fetchUrl=buildUri.toString();
+        new SearchDetailTask().execute(fetchUrl);
         getActivity().setTitle(title);
 
         // Reference for Font Style Change...
@@ -98,7 +104,7 @@ public class DetailActivityFragment extends Fragment {
         titleAddress.setTypeface(BalooBhaina);
 
         String tryUri=PlaceContract.PlaceEntry.CONTENT_URI+"";
-        Log.v(TAG,"URI : "+tryUri);
+//        Log.v(TAG,"URI : "+tryUri);
         // Icon For Fab
         String url = "content://dimpesh.com.nearbyeasy.app/place";
 
@@ -113,7 +119,7 @@ public class DetailActivityFragment extends Fragment {
         }
         catch (Exception e)
         {
-            Log.v(TAG,"Cursor Exception while fetching fab icon");
+//            Log.v(TAG,"Cursor Exception while fetching fab icon");
         }
         if (isFavourite == true) {
             fab.setImageResource(R.drawable.like);
@@ -129,7 +135,7 @@ public class DetailActivityFragment extends Fragment {
 
             @Override
             public void onClick(View v) {
-                Log.v(TAG,"onClick Called");
+//                Log.v(TAG,"onClick Called");
                 String url = "content://dimpesh.com.nearbyeasy.app/place";
 
                 Uri fetchUri = Uri.parse(url);
@@ -143,9 +149,9 @@ public class DetailActivityFragment extends Fragment {
                     values.put(PlaceContract.PlaceEntry.COLUMN_ICON, placeObject.getIcon());
                     String checkOpen;
                     if (placeObject.getOpen())
-                        checkOpen = "true";
+                        checkOpen = getString(R.string.true_daf);
                     else
-                        checkOpen = "false";
+                        checkOpen = getString(R.string.false_daf);
 
                     values.put(PlaceContract.PlaceEntry.COLUMN_OPEN, checkOpen);
                     values.put(PlaceContract.PlaceEntry.COLUMN_PHONE, phone.getText().toString());
@@ -169,18 +175,11 @@ public class DetailActivityFragment extends Fragment {
 
                 }
 
-                // Handling widget Update on Changing Favorite
-/*
-                ComponentName name = new ComponentName(getActivity(), WidgetProvider.class);
-                int[] ids = AppWidgetManager.getInstance(getActivity()).getAppWidgetIds(name);
 
-                Intent intent = new Intent(getActivity(), WidgetProvider.class);
-                intent.setAction(WidgetProvider.ACTION_UPDATE);
-                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-                getActivity().sendBroadcast(intent);
-*/
+                getActivity().sendBroadcast(new Intent(FORCE_WIDGET_UPDATE));
 
-                sendUpdateIntent(getActivity().getApplicationContext());
+
+
             }
         });
 
@@ -282,14 +281,11 @@ public class DetailActivityFragment extends Fragment {
                 Toast.makeText(getActivity(), getString(R.string.null_data), Toast.LENGTH_SHORT).show();
             }
             try {
-                Log.v(TAG,"latitude :"+ result.getLatitude());
-                Log.v(TAG, "longitude : "+result.getLongitude());
+                Log.v(TAG,result.getLatitude());
+                Log.v(TAG,result.getLongitude());
 
-                Log.v(TAG, "result" + result.getPhotoReference());
+                Log.v(TAG, result.getPhotoReference());
             } catch (Exception e) {
-/*
-                Toast.makeText(getActivity(),"Complete Data Not Available",Toast.LENGTH_SHORT).show();
-*/
             }
             populateView(result);
 
@@ -316,10 +312,10 @@ public class DetailActivityFragment extends Fragment {
                 .into(iv_icon);
         vicinity.setText(result.getVicinity());
         if (result.getOpen()) {
-            rating.setText("OPEN");
+            rating.setText(getString(R.string.open));
             rating.setTypeface(Courgette);
         } else {
-            rating.setText("CLOSED");
+            rating.setText(getString(R.string.closed));
             rating.setTypeface(Courgette);
 
         }
@@ -351,7 +347,7 @@ public class DetailActivityFragment extends Fragment {
             }
             catch(Exception e)
             {
-                Log.v(TAG,"Offline Data is not Available...");
+ //               Log.v(TAG,"Offline Data is not Available...");
             }
 
         }
@@ -362,7 +358,7 @@ public class DetailActivityFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.v(TAG, "onCreate Called");
+ //       Log.v(TAG, "onCreate Called");
         if (getArguments() != null) {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
@@ -374,10 +370,7 @@ public class DetailActivityFragment extends Fragment {
     }
 
 
-    public static void sendUpdateIntent(Context context)
-    {
-        Intent i = new Intent(context, WidgetProvider.class);
-        i.setAction(WidgetProvider.DATABASE_CHANGED);
-        context.sendBroadcast(i);
-    }
+
+
+
 }

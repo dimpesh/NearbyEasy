@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/widgetLayoutMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#aaDEDFDE"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/widget_main_padding_left"
+        android:paddingRight="@dimen/widget_main_padding_right" >
+
+        <ImageView
+            android:id="@+id/widgetImgLauncher"
+            android:layout_width="@dimen/widget_image_width"
+            android:layout_height="@dimen/width_image_height"
+            android:layout_gravity="center_vertical"
+            android:src="@mipmap/ic_launcher" />
+
+        <LinearLayout
+            android:id="@+id/widgetTopBar"
+            android:layout_width="@dimen/top_bar_width"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/widget_top_bar_padding_bottom"
+            android:paddingLeft="@dimen/widget_top_bar_padding_left"
+            android:paddingTop="@dimen/widget_top_bar_padding_top" >
+
+            <TextView
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/widget_text_heading_color"
+                android:textStyle="bold" />
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/txvWidgetTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/recent_places"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/widget_text_subheading_color" />
+        </LinearLayout>
+</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <ImageView
+        android:id="@+id/widget_icon_image_view"
+        android:layout_margin="10dp"
+        android:layout_width="40dp"
+        android:layout_height="50dp"
+        />
+    <TextView
+        android:id="@+id/widget_name_text_view"
+        android:layout_margin="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:maxLines="2"
+        android:textSize="@dimen/widget_text_size"/>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/widget_vicinity_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/widget_vicinity_size"/>
+
+</LinearLayout>

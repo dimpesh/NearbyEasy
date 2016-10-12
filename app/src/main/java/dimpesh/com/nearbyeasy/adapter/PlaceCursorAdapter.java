@@ -2,7 +2,6 @@ package dimpesh.com.nearbyeasy.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,13 +28,13 @@ public class PlaceCursorAdapter extends CursorAdapter {
         super(context, c, flags);
         mContext=context;
         loader_id=flags;
-        Log.v(TAG,"PlaceCursorAdapter-------Constructor Called--------------");
+//        Log.v(TAG,"PlaceCursorAdapter-------Constructor Called--------------");
     }
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent)
     {
-        Log.v(TAG,"MovieCursorAdapter------------newViewCalled----------------");
+//        Log.v(TAG,"MovieCursorAdapter------------newViewCalled----------------");
         View view= LayoutInflater.from(context).inflate(R.layout.list_item,parent,false);
         return view;
     }
@@ -43,7 +42,7 @@ public class PlaceCursorAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor)
     {
-        Log.v(TAG,"PlaceCursorAdapter:---------- Bind View Called---------");
+//        Log.v(TAG,"PlaceCursorAdapter:---------- Bind View Called---------");
 
         TextView tv_name,tv_vicinity;
         ImageView iv_icon;
