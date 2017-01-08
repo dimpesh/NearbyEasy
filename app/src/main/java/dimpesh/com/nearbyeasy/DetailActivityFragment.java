@@ -311,6 +311,7 @@ public class DetailActivityFragment extends Fragment {
         Picasso.with(getActivity()).load(result.getIcon()).placeholder(R.drawable.img_placeholder)
                 .into(iv_icon);
         vicinity.setText(result.getVicinity());
+            if(String.valueOf(result.getOpen())!=null){
         if (result.getOpen()) {
             rating.setText(getString(R.string.open));
             rating.setTypeface(Courgette);
@@ -318,7 +319,13 @@ public class DetailActivityFragment extends Fragment {
             rating.setText(getString(R.string.closed));
             rating.setTypeface(Courgette);
 
-        }
+        }}
+            else {
+                rating.setText(getString(R.string.na));
+                rating.setTypeface(Courgette);
+
+            }
+
     }
         else
         {

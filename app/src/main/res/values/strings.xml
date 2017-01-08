@@ -39,4 +39,5 @@
     <string name="true_daf">true</string>
     <string name="false_daf">false</string>
     <string name="gps_question">Do you want open GPS setting</string>
+    <string name="na">NA</string>
 </resources>
